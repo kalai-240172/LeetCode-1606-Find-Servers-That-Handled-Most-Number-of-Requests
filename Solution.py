@@ -1,34 +1,47 @@
-class Solution:
-    def countServers(self, n, logs, x, queries):
+import heapq
 
-        logs.sort(key=lambda log: log[1])
+class Solution(object):
+    def assignTasks(self, servers, tasks):
+        """
+        :type servers: List[int]
+        :type tasks: List[int]
+        :rtype: List[int]
+        """
 
-        sorted_queries = sorted(
-            (q, i) for i, q in enumerate(queries)
-        )
+        available = []
+        busy = []
+        result = []
 
-        result = [0] * len(queries)
-        servers = {}
+        for index, weight in enumerate(servers):
+            heapq.heappush(available, (weight, index))
 
-        left = right = 0
-        m = len(logs)
+        current_time = 0
 
-        for q, idx in sorted_queries:
+        for i, task_time in enumerate(tasks):
 
-            while right < m and logs[right][1] <= q:
-                server = logs[right][0]
-                servers[server] = servers.get(server, 0) + 1
-                right += 1
+            current_time = max(current_time, i)
 
-            while left < right and logs[left][1] < q - x:
-                server = logs[left][0]
-                servers[server] -= 1
+            while busy and busy[0][0] <= current_time:
+                finish_time, weight, index = heapq.heappop(busy)
+                heapq.heappush(available, (weight, index))
 
-                if servers[server] == 0:
-                    del servers[server]
+            if not available:
 
-                left += 1
+                current_time = busy[0][0]
 
-            result[idx] = n - len(servers)
+                while busy and busy[0][0] <= current_time:
+                    finish_time, weight, index = heapq.heappop(busy)
+                    heapq.heappush(available, (weight, index))
+
+            weight, index = heapq.heappop(available)
+
+            result.append(index)
+
+            finish_time = current_time + task_time
+
+            heapq.heappush(
+                busy,
+                (finish_time, weight, index)
+            )
 
         return result
