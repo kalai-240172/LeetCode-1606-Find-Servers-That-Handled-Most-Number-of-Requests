@@ -1,47 +1,25 @@
-import heapq
+class Solution:
+    def countServers(self, grid: list[list[int]]) -> int:
+        m = len(grid)
+        n = len(grid[0])
 
-class Solution(object):
-    def assignTasks(self, servers, tasks):
-        """
-        :type servers: List[int]
-        :type tasks: List[int]
-        :rtype: List[int]
-        """
+        row_count = [0] * m
+        col_count = [0] * n
 
-        available = []
-        busy = []
-        result = []
+        # Step 1: Count servers in each row and column
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == 1:
+                    row_count[i] += 1
+                    col_count[j] += 1
 
-        for index, weight in enumerate(servers):
-            heapq.heappush(available, (weight, index))
+        # Step 2: Count communicating servers
+        count = 0
 
-        current_time = 0
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == 1:
+                    if row_count[i] > 1 or col_count[j] > 1:
+                        count += 1
 
-        for i, task_time in enumerate(tasks):
-
-            current_time = max(current_time, i)
-
-            while busy and busy[0][0] <= current_time:
-                finish_time, weight, index = heapq.heappop(busy)
-                heapq.heappush(available, (weight, index))
-
-            if not available:
-
-                current_time = busy[0][0]
-
-                while busy and busy[0][0] <= current_time:
-                    finish_time, weight, index = heapq.heappop(busy)
-                    heapq.heappush(available, (weight, index))
-
-            weight, index = heapq.heappop(available)
-
-            result.append(index)
-
-            finish_time = current_time + task_time
-
-            heapq.heappush(
-                busy,
-                (finish_time, weight, index)
-            )
-
-        return result
+        return count
